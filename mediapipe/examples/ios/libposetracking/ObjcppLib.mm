@@ -74,6 +74,9 @@ static const char* kLandmarksOutputStream = "pose_landmarks";
     // // for real-time processing.
     // self.mediapipeGraph.maxFramesInFlight = 2;
     NSLog(@"inited graph %@", kGraphName);
+    
+    [self.mediapipeGraph addFrameOutputStream:kLandmarksOutputStream
+                             outputPacketType:MPPPacketTypeRaw];
   }
   return self;
 }
@@ -97,8 +100,8 @@ static const char* kLandmarksOutputStream = "pose_landmarks";
 
 // Receives a raw packet from the MediaPipe graph. Invoked on a MediaPipe worker thread.
 - (void)mediapipeGraph:(MPPGraph*)graph
-     didOutputPacket:(const ::mediapipe::Packet&)packet
-          fromStream:(const std::string&)streamName {
+       didOutputPacket:(const ::mediapipe::Packet&)packet
+            fromStream:(const std::string&)streamName {
             
   NSLog(@"recv packet @%@ from %@", @(packet.Timestamp().DebugString().c_str()), @(streamName.c_str()));
 
@@ -138,7 +141,7 @@ static const char* kLandmarksOutputStream = "pose_landmarks";
   const auto ts =
       mediapipe::Timestamp(self.timestamp++ * mediapipe::Timestamp::kTimestampUnitsPerSecond);
   NSError* err = nil;
-  NSLog(@"sending imageBuffer @%@ to %s", @(ts.DebugString().c_str()), kInputStream);
+  NSLog(@"sending imageBuffer @%#010x t=%@ to %s", imageBuffer, @(ts.DebugString().c_str()), kInputStream);
   auto sent = [self.mediapipeGraph sendPixelBuffer:imageBuffer
                                         intoStream:kInputStream
                                         packetType:MPPPacketTypePixelBuffer
